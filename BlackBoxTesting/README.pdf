@@ -1,0 +1,13 @@
+README should include:
+• Names and IDs of the group members.
+• Your performance analysis text as described above. We do not expect less than a paragraph and
+more than a few paragraphs.
+• Did you take any measures against the lock contention and IPC communication costs mentioned
+above?
+• Did you fully implement the project as described? If not, what parts are not implemented at all
+or not implemented as following the specified description? Note that for this project, it is very
+easy to achieve the required output without using any linked lists, message queues, multi-threading,
+multi-processing, etc., or it is also very easy to distort your execution times as mentioned above.
+Implementing the project without following the specified description or by distorting the execution
+times will be considered as plagiarism if not properly documented in this README.pdf file.
+• Structure of your messages. What size did you use for your messages and why?
