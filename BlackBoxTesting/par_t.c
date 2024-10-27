@@ -152,7 +152,7 @@ void insert_sorted(struct Node *node, struct List *list) {
     }
 }
 
-void insert_sorted_only_unique(struct Node *node, struct List *list) {
+void insert_sorted_only_unique(struct Node *node, struct List *list, int knum) {
     if (list->head == NULL && list->tail == NULL) {
         list->head = node;
         list->tail = node;
@@ -164,27 +164,55 @@ void insert_sorted_only_unique(struct Node *node, struct List *list) {
             }
             ptrr = ptrr->next;
         }
-        struct Node *ptr = list->head, *ptrPrev = NULL;
-        while (ptr != NULL){
-            if (node->id < ptr->id && ptr == list->head){
-                list->head = node;
-                node->next = ptr;
-                ptr->prev = node;
-                return;
-            }else if(node->id < ptr->id && ptr == list->tail){
-                ptrPrev->next = node;
-                node->next = ptr;
-                ptr->prev = node;
-                return;
-            }else if(node->id < ptr->id){
-                node->next = ptr;
-                ptrPrev->next = node;
-                return;
+        struct Node *ptrrr = list->head;
+        int cc = 0; int flag = 0;
+        while (ptrrr != NULL){
+            if(ptrrr->id < node->id && cc > knum){
+                remove_by_id(ptrrr->id, list);
+                ptrrr = list->tail;
+                flag = 1;
             }
-            ptrPrev = ptr;
-            ptr = ptr->next;
+            cc += 1;
+            ptrrr = ptrrr->next;
         }
-        insert_tail(node, list);
+        if(cc < knum){
+            flag = 1;
+        }
+        if (flag != 1){
+            struct Node *ptrrrr = list->head;
+            while (ptrrrr != NULL){
+                if(ptrrrr->id < node->id){
+                    remove_by_id(ptrrrr->id, list);
+                    ptrrrr = list->tail;
+                    flag = 1;
+                }
+                cc += 1;
+                ptrrrr = ptrrrr->next;
+            }
+        }
+        if(flag == 1){
+            struct Node *ptr = list->head, *ptrPrev = NULL;
+            while (ptr != NULL){
+                if (node->id < ptr->id && ptr == list->head){
+                    list->head = node;
+                    node->next = ptr;
+                    ptr->prev = node;
+                    return;
+                }else if(node->id < ptr->id && ptr == list->tail){
+                    ptrPrev->next = node;
+                    node->next = ptr;
+                    ptr->prev = node;
+                    return;
+                }else if(node->id < ptr->id){
+                    node->next = ptr;
+                    ptrPrev->next = node;
+                    return;
+                }
+                ptrPrev = ptr;
+                ptr = ptr->next;
+            }
+            insert_tail(node, list);
+        }
     }
 }
 
@@ -265,9 +293,9 @@ void *process_file(void *arg) { // This will be run by each thread
     int lineNum;
     while (fscanf(file, "%d", &lineNum) == 1) {
         struct Node *tmp = create_node("Node",lineNum);
-        insert_sorted_only_unique(tmp, localList);  // Insert into local list
-        insertion_sort_by_ID_increasing(localList);
-        get_top_K_values(localList, K);
+        insert_sorted_only_unique(tmp, localList, K);  // Insert into local list
+        // insertion_sort_by_ID_increasing(localList);
+        // get_top_K_values(localList, K);
     }
     fclose(file);
 
@@ -275,7 +303,7 @@ void *process_file(void *arg) { // This will be run by each thread
     struct Node *ptr = localList->head;
     while (ptr != NULL) {
         struct Node *tmp = create_node(ptr->name, ptr->id);
-        insert_sorted_only_unique(tmp, globalList);  // Insert into global list
+        insert_sorted_only_unique(tmp, globalList, K);  // Insert into global list
         ptr = ptr->next;
     }
     pthread_mutex_unlock(&listMutex);  // Release the lock
