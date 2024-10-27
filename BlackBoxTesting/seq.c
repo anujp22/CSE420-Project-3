@@ -228,6 +228,29 @@ void insertion_sort_by_ID_increasing(struct List *list) {
     destroy_list(listInOrder);
 }
 
+void get_top_K_values(struct List *list, int Knum){
+    struct List *listInOrder = create_list();
+    struct Node *ptr = list->tail, *tmpPtr = NULL;
+    int cFlag = 0;
+    while (ptr != NULL && cFlag < Knum) {
+        tmpPtr = create_node((ptr->name), (ptr->id));
+        insert_sorted(tmpPtr, listInOrder);
+        ptr = ptr->prev;
+        cFlag += 1;
+    }
+    cFlag = 0;
+    list->head = NULL;
+    list->tail = NULL;
+    ptr = listInOrder->head;
+    while (ptr != NULL && cFlag < Knum) {
+        tmpPtr = create_node((ptr->name), (ptr->id));
+        insert_tail(tmpPtr,list);
+        ptr = ptr->next;
+        cFlag += 1;
+    }
+    destroy_list(listInOrder);
+}
+
 int main(int argc, char *argv[])
 {
     struct List *list = create_list();
@@ -236,6 +259,7 @@ int main(int argc, char *argv[])
     int K = atoi(argv[1]);
     char *directoryPath = argv[2];
     char *outputFile = argv[3];
+
     printf("++++++++++++++++\n");
     struct dirent *pDirent;
     DIR *pDir = opendir(directoryPath);
@@ -245,19 +269,20 @@ int main(int argc, char *argv[])
         char *nameOfFile = pDirent->d_name;
         if(strstr(nameOfFile,checkIfGoodfileOne) && strstr(nameOfFile,checkIfGoodfileTwo)){
             FILE *file;
-            char line[256];
-            //this below code took so long for no reason :(
+            int lineNum;
+            //these three lines below took so long to develop for no reason :(
             size_t pathLength = strlen(directoryPath) + strlen(nameOfFile) + 2; // +2 for '/' and '\0'
             char *tmpp = malloc(pathLength);
-            snprintf(tmpp, pathLength, "%s/%s", directoryPath, nameOfFile);
+            snprintf(tmpp, pathLength, "%s/%s", directoryPath, nameOfFile); //used GeeksForGeeks on this
             file = fopen(tmpp, "r");
-            int c = 0;
-            while (fgets(line, sizeof(line), file)) {
-                // printf("%d\n", c);
-                tmp = create_node("Node",atoi(line));
+            while (fscanf(file, "%d", &lineNum) == 1) {
+                tmp = create_node("Node",lineNum);
                 insert_sorted_only_unique(tmp, list);
-                c += 1; 
+                insertion_sort_by_ID_increasing(list);
+                get_top_K_values(list, K);
             }
+            free(tmpp);
+            fclose(file);
         }
     }
     FILE *fptr;
@@ -268,10 +293,8 @@ int main(int argc, char *argv[])
         fprintf(fptr,"%d\n", highID);
         remove_by_id(highID,list);
         insertion_sort_by_ID_increasing(list);
-        // print_list(list);
     }
     printf("++++++++++++++++\n");
-    free(pDirent);
     closedir (pDir);
     destroy_list(list);
     fclose(fptr);
