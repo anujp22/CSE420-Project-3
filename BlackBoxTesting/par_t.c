@@ -294,8 +294,6 @@ void *process_file(void *arg) { // This will be run by each thread
     while (fscanf(file, "%d", &lineNum) == 1) {
         struct Node *tmp = create_node("Node",lineNum);
         insert_sorted_only_unique(tmp, localList, K);  // Insert into local list
-        // insertion_sort_by_ID_increasing(localList);
-        // get_top_K_values(localList, K);
     }
     fclose(file);
 
@@ -346,7 +344,7 @@ int main(int argc, char *argv[])
     for(int i = 0; i < K; i++){
         if (globalList->tail == NULL) break;
         int highID = globalList->tail->id;
-        printf("%d\n", highID);
+        // printf("%d\n", highID);
         fprintf(fptr, "%d\n", highID);
         remove_by_id(highID, globalList);
         insertion_sort_by_ID_increasing(globalList);

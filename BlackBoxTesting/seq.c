@@ -298,7 +298,7 @@ int main(int argc, char *argv[])
         if(strstr(nameOfFile,checkIfGoodfileOne) && strstr(nameOfFile,checkIfGoodfileTwo)){
             FILE *file;
             int lineNum;
-            printf("%s\n", nameOfFile);
+            // printf("%s\n", nameOfFile);
             //these three lines below took so long to develop for no reason :(
             size_t pathLength = strlen(directoryPath) + strlen(nameOfFile) + 2; // +2 for '/' and '\0'
             char *tmpp = malloc(pathLength);
@@ -306,21 +306,21 @@ int main(int argc, char *argv[])
             file = fopen(tmpp, "r");
             int c = 0;
             while (fscanf(file, "%d", &lineNum) == 1) {
-                printf("%s & %d & %d\n", nameOfFile, c, lineNum);
+                // printf("%s & %d & %d\n", nameOfFile, c, lineNum);
                 tmp = create_node("Node",lineNum);
                 insert_sorted_only_unique(tmp, list, K);
                 c += 1;
             }
             free(tmpp);
             fclose(file);
-            print_list(list);
+            // print_list(list);
         }
     }
     FILE *fptr;
     fptr = fopen(outputFile, "w");
     for(int i = 0; i < K; i++){
         int highID = list->tail->id;
-        printf("%d\n", highID);
+        // printf("%d\n", highID);
         fprintf(fptr,"%d\n", highID);
         remove_by_id(highID,list);
         insertion_sort_by_ID_increasing(list);
