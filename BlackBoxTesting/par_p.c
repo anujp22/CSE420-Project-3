@@ -7,10 +7,10 @@
 #include <sys/ipc.h>
 #include <sys/msg.h>
 #include <sys/types.h>
+#include <sys/wait.h>
 #include <unistd.h>
 
 struct List *globalList;  // Global linked list for top K integers
-// pthread_mutex_t listMutex = PTHREAD_MUTEX_INITIALIZER;  // Mutex for synchronization
 int K; int messageSendCounter; int flagCounter;
 
 struct Node {
@@ -294,7 +294,7 @@ void process_file(char *fileName, int msgid) {
     int lineNum; int c = 0;
 
     while (fscanf(file, "%d", &lineNum) == 1) {
-        //printf("%s & %d & %d\n", fileName, c, lineNum);
+        // printf("%s & %d & %d\n", fileName, c, lineNum);
         struct Node *tmp = create_node("Node", lineNum);
         insert_sorted_only_unique(tmp, localList, K);
         c += 1;
@@ -303,8 +303,7 @@ void process_file(char *fileName, int msgid) {
 
     struct Node *ptr = localList->head;
     while (ptr != NULL) {
-        int idd = ptr->id;
-        msgsnd(msgid, &idd, sizeof(idd), 0);  // Send message to parent
+        msgsnd(msgid, &ptr->id, sizeof(ptr->id), 0);  // Send message to parent
         ptr = ptr->next;
     }
     destroy_list(localList);
@@ -346,9 +345,9 @@ int main(int argc, char *argv[])
         }
     }
     while ((wpid = wait(&status)) > 0);
-    msgid = msgget(key, 0444);
+    // msgid = msgget(key, 0444);
     int iddd;
-    printf("%d\n", messageSendCounter);
+    // printf("%d\n", messageSendCounter);
     while (msgrcv(msgid, &iddd, sizeof(iddd), 0, 0) != -1) {
         struct Node *tmp = create_node("Node", iddd);
         insert_sorted_only_unique(tmp, globalList, K);
