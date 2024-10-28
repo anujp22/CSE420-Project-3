@@ -4,6 +4,9 @@ rm *.txt
 make clean
 make
 
+sudo sysctl -w kernel.msgmni=8192
+sudo sysctl -w kernel.msgmnb=104857
+
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 sudo sh -c 'sync && echo 3 > /proc/sys/vm/drop_caches'
@@ -113,6 +116,18 @@ else
     echo Test 9 - Fail-----------------------par_p-files4-100--------------------------Fail
 fi
 echo -e "Elapsed time (par_p-files4-100): $(($(($end-$start))/1000000)) ms\n"
+
+# sudo sh -c 'sync && echo 3 > /proc/sys/vm/drop_caches'
+# start=$(date +%s%N)
+# ./seq 1000 "$DIR/files/files8" sout_seq_files8_1000.txt
+# end=$(date +%s%N)
+
+# if diff -w sout_seq_files8_1000.txt files/correct_files8_1000.txt; then
+#     echo Test 10 - Success--------------------seq-files8-1000---------------------------Success
+# else
+#     echo Test 10 - Fail-----------------------seq-files8-1000---------------------------Fail
+# fi
+# echo -e "Elapsed time (seq-files8-1000): $(($(($end-$start))/1000000)) ms\n"
 
 sudo sh -c 'sync && echo 3 > /proc/sys/vm/drop_caches'
 start=$(date +%s%N)

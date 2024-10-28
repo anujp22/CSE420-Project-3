@@ -5,8 +5,8 @@
 #include <dirent.h>
 #include <pthread.h>
 
-struct List *globalList;  // Global linked list for top K integers
-pthread_mutex_t listMutex = PTHREAD_MUTEX_INITIALIZER;  // Mutex for synchronization
+struct List *globalList;
+pthread_mutex_t listMutex = PTHREAD_MUTEX_INITIALIZER;
 int K;
 
 struct Node {
@@ -284,16 +284,16 @@ void get_top_K_values(struct List *list, int Knum){
     destroy_list(listInOrder);
 }
 
-void *process_file(void *arg) { // This will be run by each thread
+void *process_file(void *arg) { //each thread uses this, this entire method was heavily derived from the in class example on our OS website
     char *fileName = (char *)arg;
-    struct List *localList = create_list();  // Each thread has its own local list
+    struct List *localList = create_list(); 
 
     FILE *file = fopen(fileName, "r");
 
     int lineNum;
     while (fscanf(file, "%d", &lineNum) == 1) {
         struct Node *tmp = create_node("Node",lineNum);
-        insert_sorted_only_unique(tmp, localList, K);  // Insert into local list
+        insert_sorted_only_unique(tmp, localList, K);
     }
     fclose(file);
 
@@ -301,10 +301,10 @@ void *process_file(void *arg) { // This will be run by each thread
     struct Node *ptr = localList->head;
     while (ptr != NULL) {
         struct Node *tmp = create_node(ptr->name, ptr->id);
-        insert_sorted_only_unique(tmp, globalList, K);  // Insert into global list
+        insert_sorted_only_unique(tmp, globalList, K);
         ptr = ptr->next;
     }
-    pthread_mutex_unlock(&listMutex);  // Release the lock
+    pthread_mutex_unlock(&listMutex);
 
     destroy_list(localList);
     pthread_exit(NULL);
@@ -322,7 +322,7 @@ int main(int argc, char *argv[])
     char *checkIfGoodfileTwo = ".txt";
 
     globalList = create_list(); 
-    pthread_t threads[100]; 
+    pthread_t threads[100];  //if there are more than 100 files inside the file folder than womp womp
     int threadCount = 0;
     
     while ((pDirent = readdir(pDir)) != NULL) {
@@ -332,10 +332,10 @@ int main(int argc, char *argv[])
             char *tmpp = malloc(pathLength);
             snprintf(tmpp, pathLength, "%s/%s", directoryPath, nameOfFile);
 
-            pthread_create(&threads[threadCount++], NULL, process_file, tmpp);
+            pthread_create(&threads[threadCount++], NULL, process_file, tmpp); //used in class website example on this
         }
     }
-    for (int i = 0; i < threadCount; i++) {
+    for (int i = 0; i < threadCount; i++) { //used in class examples and stack overflow here
         pthread_join(threads[i], NULL);
     }
 

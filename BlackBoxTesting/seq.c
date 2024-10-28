@@ -291,6 +291,9 @@ int main(int argc, char *argv[])
     printf("++++++++++++++++\n");
     struct dirent *pDirent;
     DIR *pDir = opendir(directoryPath);
+    if (pDir == NULL) {
+        return 0;
+    }
     char *checkIfGoodfileOne = "in";
     char *checkIfGoodfileTwo = ".txt";
     while ((pDirent = readdir(pDir)) != NULL) {
@@ -298,29 +301,37 @@ int main(int argc, char *argv[])
         if(strstr(nameOfFile,checkIfGoodfileOne) && strstr(nameOfFile,checkIfGoodfileTwo)){
             FILE *file;
             int lineNum;
-            // printf("%s\n", nameOfFile);
             //these three lines below took so long to develop for no reason :(
             size_t pathLength = strlen(directoryPath) + strlen(nameOfFile) + 2; // +2 for '/' and '\0'
             char *tmpp = malloc(pathLength);
+            if (tmpp == NULL) {
+                closedir(pDir);
+                destroy_list(list);
+                return 0;
+            }
             snprintf(tmpp, pathLength, "%s/%s", directoryPath, nameOfFile); //used GeeksForGeeks on this
             file = fopen(tmpp, "r");
-            int c = 0;
+            if (file == NULL) {
+                continue;
+            }
             while (fscanf(file, "%d", &lineNum) == 1) {
-                // printf("%s & %d & %d\n", nameOfFile, c, lineNum);
                 tmp = create_node("Node",lineNum);
                 insert_sorted_only_unique(tmp, list, K);
-                c += 1;
             }
             free(tmpp);
             fclose(file);
-            // print_list(list);
         }
     }
     FILE *fptr;
     fptr = fopen(outputFile, "w");
+    if (fptr == NULL) {
+        destroy_list(list);
+        closedir(pDir);
+        return 0;
+    }
     for(int i = 0; i < K; i++){
+        if (list->tail == NULL) break;
         int highID = list->tail->id;
-        // printf("%d\n", highID);
         fprintf(fptr,"%d\n", highID);
         remove_by_id(highID,list);
         insertion_sort_by_ID_increasing(list);

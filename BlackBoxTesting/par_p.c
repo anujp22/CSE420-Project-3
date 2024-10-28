@@ -294,7 +294,6 @@ void process_file(char *fileName, int msgid) {
     int lineNum; int c = 0;
 
     while (fscanf(file, "%d", &lineNum) == 1) {
-        // printf("%s & %d & %d\n", fileName, c, lineNum);
         struct Node *tmp = create_node("Node", lineNum);
         insert_sorted_only_unique(tmp, localList, K);
         c += 1;
@@ -303,7 +302,7 @@ void process_file(char *fileName, int msgid) {
 
     struct Node *ptr = localList->head;
     while (ptr != NULL) {
-        msgsnd(msgid, &ptr->id, sizeof(ptr->id), 0);  // Send message to parent
+        msgsnd(msgid, &ptr->id, sizeof(ptr->id), 0);
         ptr = ptr->next;
     }
     destroy_list(localList);
@@ -326,8 +325,8 @@ int main(int argc, char *argv[])
     messageSendCounter = 0;
     flagCounter = 0;
 
-    key_t key = ftok("sender.c", 1);  // Generate unique key
-    int msgid = msgget(key, 0644 | IPC_CREAT);  // Create message queue
+    key_t key = ftok("sender.c", 1);
+    int msgid = msgget(key, 0644 | IPC_CREAT);
     
     while ((pDirent = readdir(pDir)) != NULL) {
         char *nameOfFile = pDirent->d_name;
@@ -338,31 +337,26 @@ int main(int argc, char *argv[])
 
             child_pid = fork();
             if (child_pid == 0) {
-                process_file(tmpp, msgid);  // Child process
+                process_file(tmpp, msgid);
                 exit(0);
             }
             messageSendCounter += K;
         }
     }
     while ((wpid = wait(&status)) > 0);
-    // msgid = msgget(key, 0444);
     int iddd;
-    // printf("%d\n", messageSendCounter);
     while (msgrcv(msgid, &iddd, sizeof(iddd), 0, 0) != -1) {
         struct Node *tmp = create_node("Node", iddd);
         insert_sorted_only_unique(tmp, globalList, K);
-        // print_list(globalList);
         flagCounter += 1;
         if (flagCounter == messageSendCounter){
             break;
         }
     }
-    // print_list(globalList);
     FILE *fptr;
     fptr = fopen(outputFile, "w");
     for(int i = 0; i < K; i++){
         int highID = globalList->tail->id;
-        // printf("%d\n", highID);
         fprintf(fptr, "%d\n", highID);
         remove_by_id(highID, globalList);
         insertion_sort_by_ID_increasing(globalList);
@@ -372,7 +366,6 @@ int main(int argc, char *argv[])
     closedir (pDir);
     fclose(fptr);
 
-    // Cleanup message queue
     msgctl(msgid, IPC_RMID, NULL);
     return 0;
 }

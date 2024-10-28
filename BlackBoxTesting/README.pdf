@@ -1,13 +1,53 @@
-README should include:
-• Names and IDs of the group members.
-• Your performance analysis text as described above. We do not expect less than a paragraph and
-more than a few paragraphs.
-• Did you take any measures against the lock contention and IPC communication costs mentioned
-above?
-• Did you fully implement the project as described? If not, what parts are not implemented at all
-or not implemented as following the specified description? Note that for this project, it is very
-easy to achieve the required output without using any linked lists, message queues, multi-threading,
-multi-processing, etc., or it is also very easy to distort your execution times as mentioned above.
-Implementing the project without following the specified description or by distorting the execution
-times will be considered as plagiarism if not properly documented in this README.pdf file.
-• Structure of your messages. What size did you use for your messages and why?
+DISCLAIMER:
+- *TBD*
+
+README:
+- *Names and ID* TBD
+
+- Analysis information:
+Test size  | Run Iteration  |   seq Finish Times(ms)    |   par_p Finish Times(ms)  |   par_t Finish Times(ms)
+    3               1                   2                               4                         2
+    3               2                   2                               2                         2
+    3               3                   2                               3                         2
+    10              1                   1189                            710                       572
+    10              2                   1121                            776                       611
+    10              3                   1039                            650                       514
+    100             1                   16771                           4720                      4583
+    100             2                   16984                           4779                      4618
+    100             3                   17481                           4907                      4795
+    1000            1                   485681                          158171                    158875
+    1000            2                   503189                          141640                    147446
+    1000            3                   475039                          142839                    143266
+
+    As seen in the table above, can take each test case from each test size and use an average for each to
+find how much faster parallel version with threads and processes is faster than sequential version. For a 
+K size of three with very little numbers in the actual files itself from the provided test cases, there
+were little differences in all methods due to how little numbers needed for all three methods, just needing
+two ms. For the test size of 10 on the provided dataset, par_p averaged 40% faster than seq(1.4x) and was almost 
+100% faster than seq every run(2x). These percentages increased drastically the higher the test size was as seen
+in the table above. Furthermore though, the higher the values for the test size, the parallel version with 
+threads seems to take a little lead comapred to those with processes in terms of execution time. These values
+make sense *TBD* *insert hardware processor analysis*
+
+- *Did you take any measures against the lock contention and IPC communication costs mentioned above?*
+
+- Implementation of the project
+    We believe that this project was fully implemented as the project report as described. The only thing that we saw
+that wasn't implemented was PTHREAD_CREATE_JOINABLE since didn't read the entire project before getting down into
+the "Tips and Clarifications" inside the report when got to section 1.2. Sequential version only used one main
+and solved like a normal Kattis problem. The parallel version with threads was executed using each thread for
+their own file and used lock contention(this section heavily used what was in the in class example code). The
+last section took very long to implement due to the last test case of 1000 on the K not working. After a lot
+of testing, this was due to so many messages called on the msgsend. After a lot of research, there were two
+ways of going about it. Either implementing a change on where can place all unique values in an small array of
+size ten and then pass it along or just use a terminal command to increase the size of how many messages are allowed
+by the program. The first way was tried to be implemeneted for a full day of work but couldn't get arrays to be 
+passed with the appropriate parameters nor through "System V Message Queues" and got really weird values from
+the "msgrcv" part. The main thought process of using fork() made sense but not the entire part of sending messages
+across processes. In the end, just adding two lines into the test.sh method to increase the size of the message
+process itself was used to make sure that all test cases, no matter how large a K, can work. Overall, the last
+section was implemented in the main idea with everything needed, but probably not the best optimize. In the end,
+we beleive the whole project was implemented as described. All the other methods were used from project 1.
+
+- Structure of the message. *What size did you use for your messages and why?*
+ *tbd*
