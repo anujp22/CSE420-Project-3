@@ -1,10 +1,24 @@
 DISCLAIMER:
-- *TBD*
+- Due to each number from the global list is being sent from the local list in the processor in par_p.c, need
+to add two lines to incrase max messages allowed and max storage for ecah message used. To solve all test cases,
+these two lines had to be added to solve the very last test case on par_p.c for K=1000 inside the test.sh file
+just below the last make command:
+    sudo sysctl -w kernel.msgmni=8192
+    sudo sysctl -w kernel.msgmnb=104857
+- valgrind on seq, command used: valgrind --leak-check=full -s ./seq 3 /home/sam/Downloads/BlackBoxTesting/files/files1 sout_seq_files1_3.txt
+    - output on seq: "All heap blocks were freed -- no leaks are possible"
+- valgrind on par_t, command used: valgrind --leak-check=full -s --show-leak-kinds=all ./par_t 3 /home/sam/Downloads/BlackBoxTesting/files/files1 sout_par_t_files1_3.txt 
+    - output on part_t: "still reachable: 127 bytes in 7 blocks" ~ project says this is allowed for still reachable if all others leaks are zero
+- valgrind on par_p, command used: valgrind --leak-check=full -s --show-leak-kinds=all ./par_p 3 /home/sam/Downloads/BlackBoxTesting/files/files1 sout_par_p_files1_3.txt
+    - output on par_p: "still reachable: 127 bytes in 7 blocks" ~ project says this is allowed for still reachable if all others leaks are zero
 
 README:
-- *Names and ID* TBD
+- Names & Student ID
+Sam Brey   - 5387818
+Anuj Patel - 5473411
 
 - Analysis information:
+TABLE 1(Before going through Valgrind ~ this table is used for discussion below):
 Test size  | Run Iteration  |   seq Finish Times(ms)    |   par_p Finish Times(ms)  |   par_t Finish Times(ms)
     3               1                   2                               4                         2
     3               2                   2                               2                         2
@@ -19,17 +33,49 @@ Test size  | Run Iteration  |   seq Finish Times(ms)    |   par_p Finish Times(m
     1000            2                   503189                          141640                    147446
     1000            3                   475039                          142839                    143266
 
-    As seen in the table above, can take each test case from each test size and use an average for each to
+TABLE 2(After going through Valgrind ~ making sure no Leaks ~ optimization of code):
+Test size  | Run Iteration  |   seq Finish Times(ms)    |   par_p Finish Times(ms)  |   par_t Finish Times(ms)
+    3               1                   2                               3                         2
+    3               2                   2                               3                         3
+    3               3                   2                               3                         2
+    10              1                   902                             596                       472
+    10              2                   823                             445                       451
+    10              3                   811                             538                       464
+    100             1                   8743                            2443                      2260
+    100             2                   8486                            2304                      2219
+    100             3                   9006                            2544                      2293
+    1000            1                   317304                          76115                     79137
+    1000            2                   312307                          80739                     83857
+    1000            3                   316569                          77292                     82314
+
+    As seen in the first table above, can take each test case from each test size and use an average for each to
 find how much faster parallel version with threads and processes is faster than sequential version. For a 
 K size of three with very little numbers in the actual files itself from the provided test cases, there
 were little differences in all methods due to how little numbers needed for all three methods, just needing
 two ms. For the test size of 10 on the provided dataset, par_p averaged 40% faster than seq(1.4x) and was almost 
 100% faster than seq every run(2x). These percentages increased drastically the higher the test size was as seen
 in the table above. Furthermore though, the higher the values for the test size, the parallel version with 
-threads seems to take a little lead comapred to those with processes in terms of execution time. These values
-make sense *TBD* *insert hardware processor analysis*
+threads seems to take a little lead comapred to those with processes in terms of execution time. These values of
+speed up make sense since using threads or processors compared to just the sequential method will always be faster
+and there can only be a limited number of processors since the max number of processors was used when installing
+Ubuntu on this pc. Working on more than one file at a time instead of each file one a time is a big boost in performance.
+Overall, in terms of actual hardware, the sequential uses a single core(processor) and therefore slower as seen
+in the table above comparing to threading and multi-processor. Threading is good but requires locking mechanisms while
+multiple processors being used can be good if there are enough processors allocated for the system.
 
-- *Did you take any measures against the lock contention and IPC communication costs mentioned above?*
+- Measures against the lock contention and IPC communication costs
+    The measures against the lock contention is to only lock the "listMutex" when the local list of each thread
+was finished going through the entire file. Using the project file itself and in class examples, lock contention
+was avoided by each thread completeing their local list and then inserting into the global list. This eliminates 
+lock contention, as seen in par_t.c file, so not multiple threads are using the global list at the same time. 
+This lock and unlock operations on the global list allows the threads to perform their operations at the same time.
+Furthermore, local memory on each thread is good since using local lists on each file while shared resources
+like the global list is only used during the lock while others perform wihtout a lock. In terms of IPC communicaiton
+costs, the measures taken was lots of research on how the IPC messages communicaiton actually works. Similiar to
+lock contention, each processor(from the fork()) first use a local list before sending messages to the IPC 
+communication. This saves resources and time in the message system. However, even their were limits to the IPC
+communication even with the local list. Overall, optimization not only in speed, but in memory, storage, and
+in lock conention had to take place.
 
 - Implementation of the project
     We believe that this project was fully implemented as the project report as described. The only thing that we saw
@@ -49,5 +95,12 @@ process itself was used to make sure that all test cases, no matter how large a 
 section was implemented in the main idea with everything needed, but probably not the best optimize. In the end,
 we beleive the whole project was implemented as described. All the other methods were used from project 1.
 
-- Structure of the message. *What size did you use for your messages and why?*
- *tbd*
+- Structure of the message
+    The size that was used for the messages was just a regular size of regular variable int. This is because the size
+of anything else wasn't working as intended and always found just sending a regular int through the message system
+was easier. However, the price to pay for sending an int through from each processor is so many messages being sent
+and the size of the messages comes into play. When running all test cases for the message system, all worked fine
+until got to a large K value of 1000. This took a long time of debugging trying to find out better ways to use the 
+message system but wasn't able to. The last option had to be used of manually just adjusting the message size. This
+was accomplishd by adding two lines in the test.sh to increase the message size. This isn't the best optimize but
+works to accomplish the test case.
