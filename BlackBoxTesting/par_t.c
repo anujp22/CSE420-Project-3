@@ -160,6 +160,8 @@ void insert_sorted_only_unique(struct Node *node, struct List *list, int knum) {
         struct Node *ptrr = list->head;
         while (ptrr != NULL){
             if(ptrr->id == node->id){
+                free(node->name);
+                free(node);
                 return;
             }
             ptrr = ptrr->next;
@@ -212,6 +214,9 @@ void insert_sorted_only_unique(struct Node *node, struct List *list, int knum) {
                 ptr = ptr->next;
             }
             insert_tail(node, list);
+        }else{
+            free(node->name);
+            free(node);
         }
     }
 }
@@ -295,6 +300,7 @@ void *process_file(void *arg) { //each thread uses this, this entire method was 
         struct Node *tmp = create_node("Node",lineNum);
         insert_sorted_only_unique(tmp, localList, K);
     }
+    free(fileName);
     fclose(file);
 
     pthread_mutex_lock(&listMutex);
@@ -312,6 +318,7 @@ void *process_file(void *arg) { //each thread uses this, this entire method was 
 
 int main(int argc, char *argv[])
 {
+    struct Node *tmp = NULL;
     K = atoi(argv[1]);
     char *directoryPath = argv[2];
     char *outputFile = argv[3];
@@ -341,13 +348,16 @@ int main(int argc, char *argv[])
 
     FILE *fptr;
     fptr = fopen(outputFile, "w");
+    int tempKHolder = K; int highCounter = 1;
+    int finalArr[tempKHolder];
+    tmp = globalList->head;
+    while(tmp != NULL){
+        finalArr[(tempKHolder-highCounter)] = tmp->id;
+        highCounter += 1;
+        tmp = tmp->next;
+    }
     for(int i = 0; i < K; i++){
-        if (globalList->tail == NULL) break;
-        int highID = globalList->tail->id;
-        // printf("%d\n", highID);
-        fprintf(fptr, "%d\n", highID);
-        remove_by_id(highID, globalList);
-        insertion_sort_by_ID_increasing(globalList);
+        fprintf(fptr,"%d\n", finalArr[i]);
     }
     printf("++++++++++++++++\n");
     free(pDirent);

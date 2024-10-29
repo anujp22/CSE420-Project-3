@@ -155,6 +155,8 @@ void insert_sorted_only_unique(struct Node *node, struct List *list, int knum) {
         struct Node *ptrr = list->head;
         while (ptrr != NULL){
             if(ptrr->id == node->id){
+                free(node->name);
+                free(node);
                 return;
             }
             ptrr = ptrr->next;
@@ -207,6 +209,9 @@ void insert_sorted_only_unique(struct Node *node, struct List *list, int knum) {
                 ptr = ptr->next;
             }
             insert_tail(node, list);
+        }else{
+            free(node->name);
+            free(node);
         }
     }
 }
@@ -291,9 +296,6 @@ int main(int argc, char *argv[])
     printf("++++++++++++++++\n");
     struct dirent *pDirent;
     DIR *pDir = opendir(directoryPath);
-    if (pDir == NULL) {
-        return 0;
-    }
     char *checkIfGoodfileOne = "in";
     char *checkIfGoodfileTwo = ".txt";
     while ((pDirent = readdir(pDir)) != NULL) {
@@ -304,11 +306,6 @@ int main(int argc, char *argv[])
             //these three lines below took so long to develop for no reason :(
             size_t pathLength = strlen(directoryPath) + strlen(nameOfFile) + 2; // +2 for '/' and '\0'
             char *tmpp = malloc(pathLength);
-            if (tmpp == NULL) {
-                closedir(pDir);
-                destroy_list(list);
-                return 0;
-            }
             snprintf(tmpp, pathLength, "%s/%s", directoryPath, nameOfFile); //used GeeksForGeeks on this
             file = fopen(tmpp, "r");
             if (file == NULL) {
@@ -324,17 +321,16 @@ int main(int argc, char *argv[])
     }
     FILE *fptr;
     fptr = fopen(outputFile, "w");
-    if (fptr == NULL) {
-        destroy_list(list);
-        closedir(pDir);
-        return 0;
+    int tempKHolder = K; int highCounter = 1;
+    int finalArr[tempKHolder];
+    tmp = list->head;
+    while(tmp != NULL){
+        finalArr[(tempKHolder-highCounter)] = tmp->id;
+        highCounter += 1;
+        tmp = tmp->next;
     }
     for(int i = 0; i < K; i++){
-        if (list->tail == NULL) break;
-        int highID = list->tail->id;
-        fprintf(fptr,"%d\n", highID);
-        remove_by_id(highID,list);
-        insertion_sort_by_ID_increasing(list);
+        fprintf(fptr,"%d\n", finalArr[i]);
     }
     printf("++++++++++++++++\n");
     closedir(pDir);
